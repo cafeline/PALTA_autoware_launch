@@ -32,7 +32,7 @@ launch:
       default: "false"
   - arg:
       name: launch_goal_planner_module
-      default: "true"
+      default: "false"
   - arg:
       name: launch_start_planner_module
       default: "true"
