@@ -9,6 +9,17 @@
   <arg name="pointcloud_container_name" description="name of pointcloud container"/>
   <arg name="use_sim_time" default="false"/>
   <arg name="vehicle_model" default="sample_vehicle"/>
+  <arg name="perception_mode" default="lidar"/>
+  <arg
+    name="perception_module_preset"
+    default="default"
+    description="perception module preset. options: default, lidar_obstacle_detection_minimal"
+  />
+  <arg
+    name="input/pointcloud"
+    default="/sensing/lidar/concatenated/pointcloud"
+    description="input pointcloud topic for perception"
+  />
 
   <!-- Pointcloud container -->
   <group if="$(var launch_pointcloud_container)">
@@ -73,10 +84,23 @@
     description="select high accuracy detector type for traffic light recognition: fine_detection or whole_image_detection"
   />
 
-  <include file="$(find-pkg-share tier4_perception_launch)/launch/perception.launch.xml">
+  <arg
+    name="minimal_obstacle_segmentation_ground_segmentation_param_path"
+    default="$(find-pkg-share autoware_launch)/config/perception/obstacle_segmentation/ground_segmentation/ground_segmentation.param.yaml"
+    description="ground segmentation param path for lidar_obstacle_detection_minimal preset"
+  />
+  <arg
+    name="minimal_object_recognition_detection_voxel_grid_based_euclidean_cluster_param_path"
+    default="$(find-pkg-share autoware_launch)/config/perception/object_recognition/detection/clustering/voxel_grid_based_euclidean_cluster.param.yaml"
+    description="clustering param path for lidar_obstacle_detection_minimal preset"
+  />
+
+  <group unless="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)">
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/perception.launch.xml">
     <arg name="data_path" value="$(var data_path)"/>
     <!-- general options to switch launch function/module -->
     <arg name="mode" value="$(var perception_mode)"/>
+    <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
     <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
     <arg name="use_multi_channel_tracker_merger" value="$(var use_multi_channel_tracker_merger)"/>
     <arg name="tracker_publish_merged_objects" value="$(var tracker_publish_merged_objects)"/>
@@ -295,5 +319,29 @@
     <arg name="traffic_light_recognition/classification/pedestrian/model_path" value="$(var data_path)/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx"/>
     <arg name="traffic_light_recognition/classification/pedestrian/label_path" value="$(var data_path)/traffic_light_classifier/lamp_labels_ped.txt"/>
     <arg name="input_pointcloud_for_traffic_light_occlusion_predictor" value="$(var input_pointcloud_for_traffic_light_occlusion_predictor)"/>
-  </include>
+    </include>
+  </group>
+
+  <group if="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)">
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/perception_lidar_obstacle_detection_minimal.launch.xml">
+      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+      <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+      <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
+      <arg
+        name="obstacle_segmentation_ground_segmentation_param_path"
+        value="$(var minimal_obstacle_segmentation_ground_segmentation_param_path)"
+      />
+      <arg
+        name="object_recognition_detection_voxel_grid_based_euclidean_cluster_param_path"
+        value="$(var minimal_object_recognition_detection_voxel_grid_based_euclidean_cluster_param_path)"
+      />
+    </include>
+
+    <group if="$(var use_empty_dynamic_object_publisher)">
+      <push-ros-namespace namespace="perception/object_recognition"/>
+      <node pkg="autoware_dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
+        <remap from="~/output/objects" to="/perception/object_recognition/objects"/>
+      </node>
+    </group>
+  </group>
 </launch>

@@ -9,6 +9,11 @@
   <!-- launch module preset -->
   <arg name="planning_module_preset" default="default" description="planning module preset"/>
   <arg name="control_module_preset" default="default" description="control module preset"/>
+  <arg
+    name="perception_module_preset"
+    default="default"
+    description="perception module preset. options: default, lidar_obstacle_detection_minimal"
+  />
   <arg name="controller" default="" description="control controller override. option: autoware_pure_pursuit"/>
 
   <!-- Optional parameters -->
@@ -27,6 +32,11 @@
   <arg name="perception/enable_object_recognition" default="true" description="enable object recognition when using dummy perception"/>
   <arg name="perception/enable_traffic_light" default="false" description="enable traffic light recognition"/>
   <arg name="perception/use_base_link_z" default="true" description="dummy perception uses base_link z axis coordinate if it is true"/>
+  <arg
+    name="perception_input_pointcloud"
+    default="/sensing/lidar/concatenated/pointcloud"
+    description="input pointcloud topic for perception"
+  />
   <arg name="sensing/visible_range" default="300.0" description="visible range when using dummy perception"/>
   <arg name="scenario_simulation" default="false" description="use scenario simulation"/>
   <!-- Tools -->
@@ -52,6 +62,26 @@
     <!-- Vehicle -->
     <let name="launch_vehicle_interface" value="false" if="$(var vehicle_simulation)"/>
     <let name="launch_vehicle_interface" value="true" unless="$(var vehicle_simulation)"/>
+    <let
+      name="launch_autoware_perception"
+      value="true"
+      if="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)"
+    />
+    <let
+      name="launch_autoware_perception"
+      value="false"
+      unless="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)"
+    />
+    <let
+      name="perception_use_empty_dynamic_object_publisher"
+      value="true"
+      if="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)"
+    />
+    <let
+      name="perception_use_empty_dynamic_object_publisher"
+      value="false"
+      unless="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)"
+    />
 
     <include file="$(find-pkg-share autoware_launch)/launch/autoware.launch.xml">
       <!-- Common -->
@@ -62,11 +92,12 @@
       <!-- launch module preset -->
       <arg name="planning_module_preset" value="$(var planning_module_preset)"/>
       <arg name="control_module_preset" value="$(var control_module_preset)"/>
+      <arg name="perception_module_preset" value="$(var perception_module_preset)"/>
       <arg name="controller" value="$(var controller)"/>
       <!-- Modules to be launched -->
       <arg name="launch_sensing" value="false"/>
       <arg name="launch_localization" value="false"/>
-      <arg name="launch_perception" value="false"/>
+      <arg name="launch_perception" value="$(var launch_autoware_perception)"/>
       <!-- Vehicle -->
       <arg name="launch_vehicle_interface" value="$(var launch_vehicle_interface)"/>
       <!-- System -->
@@ -81,6 +112,11 @@
       <arg name="rviz" value="$(var rviz)"/>
       <arg name="rviz_config" value="$(var rviz_config)"/>
       <arg name="rviz_respawn" value="$(var rviz_respawn)"/>
+      <arg name="perception_input_pointcloud" value="$(var perception_input_pointcloud)"/>
+      <arg
+        name="perception_use_empty_dynamic_object_publisher"
+        value="$(var perception_use_empty_dynamic_object_publisher)"
+      />
       <!-- Auto mode setting-->
       <arg name="enable_all_modules_auto_mode" value="$(var enable_all_modules_auto_mode)"/>
       <arg name="is_simulation" value="true"/>
@@ -89,6 +125,26 @@
 
   <!-- Simulator -->
   <group>
+    <let
+      name="launch_simulator_perception_modules"
+      value="false"
+      if="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)"
+    />
+    <let
+      name="launch_simulator_perception_modules"
+      value="true"
+      unless="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)"
+    />
+    <let
+      name="launch_dummy_perception_pointcloud_source"
+      value="true"
+      if="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)"
+    />
+    <let
+      name="launch_dummy_perception_pointcloud_source"
+      value="false"
+      unless="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)"
+    />
     <let name="launch_dummy_perception" value="false" if="$(var scenario_simulation)"/>
     <let name="launch_dummy_perception" value="true" unless="$(var scenario_simulation)"/>
     <let name="launch_dummy_vehicle" value="false" if="$(var scenario_simulation)"/>
@@ -96,6 +152,12 @@
     <let name="launch_scenario_simulator_v2_adapter" value="$(var scenario_simulation)"/>
 
     <include file="$(find-pkg-share autoware_launch)/launch/components/tier4_simulator_component.launch.xml">
+      <arg name="launch_simulator_perception_modules" value="$(var launch_simulator_perception_modules)"/>
+      <arg
+        name="launch_dummy_perception_pointcloud_source"
+        value="$(var launch_dummy_perception_pointcloud_source)"
+      />
+      <arg name="dummy_perception_pointcloud_topic" value="$(var perception_input_pointcloud)"/>
       <arg name="launch_dummy_perception" value="$(var launch_dummy_perception)"/>
       <arg name="launch_dummy_vehicle" value="$(var launch_dummy_vehicle)"/>
       <arg name="localization_sim_mode" value="$(var localization_sim_mode)"/>
