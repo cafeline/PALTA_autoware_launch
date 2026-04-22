@@ -74,7 +74,7 @@
     />
     <let
       name="perception_use_empty_dynamic_object_publisher"
-      value="true"
+      value="false"
       if="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)"
     />
     <let
