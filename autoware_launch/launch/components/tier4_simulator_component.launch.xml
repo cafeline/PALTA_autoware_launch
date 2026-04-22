@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="launch_simulator_perception_modules" default="true"/>
+  <arg name="launch_dummy_perception_pointcloud_source" default="false"/>
+  <arg name="dummy_perception_pointcloud_topic" default="/sensing/lidar/concatenated/pointcloud"/>
   <arg name="launch_dummy_perception"/>
   <arg name="launch_dummy_vehicle"/>
   <arg name="localization_sim_mode"/>
@@ -18,6 +21,12 @@
   <arg name="use_pointcloud_container" default="true" description="use point cloud container for simulator perception modules"/>
 
   <include file="$(find-pkg-share tier4_simulator_launch)/launch/simulator.launch.xml">
+    <arg name="launch_simulator_perception_modules" value="$(var launch_simulator_perception_modules)"/>
+    <arg
+      name="launch_dummy_perception_pointcloud_source"
+      value="$(var launch_dummy_perception_pointcloud_source)"
+    />
+    <arg name="dummy_perception_pointcloud_topic" value="$(var dummy_perception_pointcloud_topic)"/>
     <arg name="launch_dummy_perception" value="$(var launch_dummy_perception)"/>
     <arg name="launch_dummy_vehicle" value="$(var launch_dummy_vehicle)"/>
     <arg name="localization_sim_mode" value="$(var localization_sim_mode)"/>

@@ -9,6 +9,17 @@
   <arg name="pointcloud_container_name" description="name of pointcloud container"/>
   <arg name="use_sim_time" default="false"/>
   <arg name="vehicle_model" default="sample_vehicle"/>
+  <arg name="perception_mode" default="lidar"/>
+  <arg
+    name="perception_module_preset"
+    default="default"
+    description="perception module preset. options: default, lidar_obstacle_detection_minimal"
+  />
+  <arg
+    name="input/pointcloud"
+    default="/sensing/lidar/concatenated/pointcloud"
+    description="input pointcloud topic for perception"
+  />
 
   <!-- Pointcloud container -->
   <group if="$(var launch_pointcloud_container)">
@@ -50,6 +61,14 @@
 
   <arg name="occupancy_grid_map_method" default="pointcloud_based" description="options: pointcloud_based, laserscan_based, multi_lidar_pointcloud_based"/>
   <arg name="occupancy_grid_map_updater" default="binary_bayes_filter" description="options: binary_bayes_filter"/>
+  <arg
+    name="occupancy_grid_map_param_path"
+    default="$(find-pkg-share autoware_launch)/config/perception/occupancy_grid_map/$(var occupancy_grid_map_method)_occupancy_grid_map.param.yaml"
+  />
+  <arg
+    name="occupancy_grid_map_updater_param_path"
+    default="$(find-pkg-share autoware_launch)/config/perception/occupancy_grid_map/$(var occupancy_grid_map_updater)_updater.param.yaml"
+  />
   <arg name="detected_objects_filter_method" default="lanelet_filter" description="options: lanelet_filter, position_filter"/>
   <arg name="detected_objects_validation_method" default="obstacle_pointcloud" description="options: obstacle_pointcloud, occupancy_grid (must be used with laserscan_based_occupancy_grid_map)"/>
   <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
@@ -73,10 +92,33 @@
     description="select high accuracy detector type for traffic light recognition: fine_detection or whole_image_detection"
   />
 
-  <include file="$(find-pkg-share tier4_perception_launch)/launch/perception.launch.xml">
+  <arg
+    name="minimal_obstacle_segmentation_ground_segmentation_param_path"
+    default="$(find-pkg-share autoware_launch)/config/perception/obstacle_segmentation/ground_segmentation/ground_segmentation.param.yaml"
+    description="ground segmentation param path for lidar_obstacle_detection_minimal preset"
+  />
+  <arg
+    name="minimal_object_recognition_detection_voxel_grid_based_euclidean_cluster_param_path"
+    default="$(find-pkg-share autoware_launch)/config/perception/object_recognition/detection/clustering/voxel_grid_based_euclidean_cluster.param.yaml"
+    description="clustering param path for lidar_obstacle_detection_minimal preset"
+  />
+  <arg
+    name="object_recognition_prediction_map_based_prediction_param_path"
+    default="$(find-pkg-share autoware_launch)/config/perception/object_recognition/prediction/map_based_prediction.param.yaml"
+    description="map based prediction param path"
+  />
+  <arg
+    name="lidar_short_range_detection_model_type"
+    default="centerpoint_short_range"
+    description="short range lidar detection model type"
+  />
+
+  <group unless="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)">
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/perception.launch.xml">
     <arg name="data_path" value="$(var data_path)"/>
     <!-- general options to switch launch function/module -->
     <arg name="mode" value="$(var perception_mode)"/>
+    <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
     <arg name="lidar_detection_model" value="$(var lidar_detection_model)"/>
     <arg name="use_multi_channel_tracker_merger" value="$(var use_multi_channel_tracker_merger)"/>
     <arg name="tracker_publish_merged_objects" value="$(var tracker_publish_merged_objects)"/>
@@ -247,10 +289,6 @@
       value="$(find-pkg-share autoware_launch)/config/perception/obstacle_segmentation/ground_segmentation/elevation_map_parameters.yaml"
     />
 
-    <!-- occupancy grid map parameters -->
-    <arg name="occupancy_grid_map_param_path" value="$(find-pkg-share autoware_launch)/config/perception/occupancy_grid_map/$(var occupancy_grid_map_method).param.yaml"/>
-    <arg name="occupancy_grid_map_updater_param_path" value="$(find-pkg-share autoware_launch)/config/perception/occupancy_grid_map/$(var occupancy_grid_map_updater)_updater.param.yaml"/>
-
     <!-- traffic light recognition parameters -->
     <arg
       name="each_traffic_light_map_based_detector_param_path"
@@ -295,5 +333,93 @@
     <arg name="traffic_light_recognition/classification/pedestrian/model_path" value="$(var data_path)/traffic_light_classifier/ped_traffic_light_classifier_mobilenetv2_batch_6.onnx"/>
     <arg name="traffic_light_recognition/classification/pedestrian/label_path" value="$(var data_path)/traffic_light_classifier/lamp_labels_ped.txt"/>
     <arg name="input_pointcloud_for_traffic_light_occlusion_predictor" value="$(var input_pointcloud_for_traffic_light_occlusion_predictor)"/>
-  </include>
+    </include>
+  </group>
+
+  <group if="$(eval &quot;'$(var perception_module_preset)'=='lidar_obstacle_detection_minimal'&quot;)">
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/perception_lidar_obstacle_detection_minimal.launch.xml">
+      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+      <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+      <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
+      <arg
+        name="obstacle_segmentation_ground_segmentation_param_path"
+        value="$(var minimal_obstacle_segmentation_ground_segmentation_param_path)"
+      />
+      <arg
+        name="object_recognition_detection_voxel_grid_based_euclidean_cluster_param_path"
+        value="$(var minimal_object_recognition_detection_voxel_grid_based_euclidean_cluster_param_path)"
+      />
+    </include>
+
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/occupancy_grid_map/probabilistic_occupancy_grid_map.launch.xml">
+      <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
+      <arg name="input/raw_pointcloud" value="$(var input/pointcloud)"/>
+      <arg name="output" value="/perception/occupancy_grid_map/map"/>
+      <arg name="use_intra_process" value="true"/>
+      <arg name="use_multithread" value="true"/>
+      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+      <arg name="occupancy_grid_map_method" value="$(var occupancy_grid_map_method)_occupancy_grid_map"/>
+      <arg name="occupancy_grid_map_param_path" value="$(var occupancy_grid_map_param_path)"/>
+      <arg name="occupancy_grid_map_updater" value="$(var occupancy_grid_map_updater)"/>
+      <arg
+        name="occupancy_grid_map_updater_param_path"
+        value="$(var occupancy_grid_map_updater_param_path)"
+      />
+      <arg name="use_pointcloud_container" value="true"/>
+    </include>
+
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
+      <arg name="mode" value="lidar"/>
+      <arg name="use_radar_tracking_fusion" value="false"/>
+      <arg name="use_multi_channel_tracker_merger" value="false"/>
+      <arg name="use_validator" value="false"/>
+      <arg name="use_short_range_detection" value="false"/>
+      <arg name="use_camera_vru_detector" value="false"/>
+      <arg name="publish_merged_objects" value="false"/>
+      <arg name="input/merged_detection/channel" value="detected_objects"/>
+      <arg name="input/merged_detection/objects" value="/perception/object_recognition/detection/objects"/>
+      <arg name="output/objects" value="/perception/object_recognition/tracking/objects"/>
+      <arg
+        name="object_recognition_tracking_multi_object_tracker_data_association_matrix_param_path"
+        value="$(find-pkg-share autoware_launch)/config/perception/object_recognition/tracking/multi_object_tracker/data_association_matrix.param.yaml"
+      />
+      <arg
+        name="object_recognition_tracking_multi_object_tracker_input_channels_param_path"
+        value="$(find-pkg-share autoware_launch)/config/perception/object_recognition/tracking/multi_object_tracker/input_channels.param.yaml"
+      />
+      <arg
+        name="object_recognition_tracking_multi_object_tracker_node_param_path"
+        value="$(find-pkg-share autoware_launch)/config/perception/object_recognition/tracking/multi_object_tracker/multi_object_tracker_node.param.yaml"
+      />
+      <arg
+        name="object_recognition_tracking_radar_tracked_object_sorter_param_path"
+        value="$(find-pkg-share autoware_launch)/config/perception/object_recognition/tracking/radar_object_tracker/tracked_object_sorter.param.yaml"
+      />
+      <arg
+        name="object_recognition_tracking_radar_tracked_object_lanelet_filter_param_path"
+        value="$(find-pkg-share autoware_launch)/config/perception/object_recognition/tracking/radar_object_tracker/tracked_object_lanelet_filter.param.yaml"
+      />
+      <arg
+        name="object_recognition_tracking_object_merger_data_association_matrix_param_path"
+        value="$(find-pkg-share autoware_launch)/config/perception/object_recognition/tracking/tracking_object_merger/data_association_matrix.param.yaml"
+      />
+      <arg
+        name="object_recognition_tracking_object_merger_node_param_path"
+        value="$(find-pkg-share autoware_launch)/config/perception/object_recognition/tracking/tracking_object_merger/decorative_tracker_merger.param.yaml"
+      />
+    </include>
+
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
+      <arg name="use_vector_map" value="$(var use_vector_map)"/>
+      <arg name="prediction_model_type" value="map_based"/>
+      <arg name="input/objects" value="/perception/object_recognition/tracking/objects"/>
+    </include>
+
+    <group if="$(var use_empty_dynamic_object_publisher)">
+      <push-ros-namespace namespace="perception/object_recognition"/>
+      <node pkg="autoware_dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
+        <remap from="~/output/objects" to="/perception/object_recognition/objects"/>
+      </node>
+    </group>
+  </group>
 </launch>
