@@ -5,7 +5,7 @@
       backward: 5.0
       forward: 300.0
     waypoint:
-      connection_gradient_from_centerline: 10.0
+      connection_gradient_from_centerline: 0.0
     turn_signal:
       search_time: 3.0
       search_distance: 30.0
