@@ -2,7 +2,7 @@
   ros__parameters:
     dynamic_avoidance:
       common:
-        enable_debug_info: false
+        enable_debug_info: true
         use_hatched_road_markings: true
 
       # avoidance is performed for the object type with true
@@ -11,7 +11,7 @@
         truck: true
         bus: true
         trailer: true
-        unknown: false
+        unknown: true
         bicycle: true
         motorcycle: true
         pedestrian: true
@@ -56,12 +56,12 @@
         object_path_base:
           min_longitudinal_polygon_margin: 3.0 # [m]
 
-        lat_offset_from_obstacle: 0.3 # [m]
+        lat_offset_from_obstacle: 0.1 # [m]
         margin_distance_around_pedestrian: 0.8 # [m]
         predicted_path:
           end_time_to_consider: 1.0 # [s]
           threshold_confidence: 0.0 # [] not probability
-        max_lat_offset_to_avoid: 0.5 # [m]
+        max_lat_offset_to_avoid: 3.0 # [m]
         max_time_for_object_lat_shift: 0.0 # [s]
         lpf_gain_for_lat_avoid_to_offset: 0.9 # [-]
 

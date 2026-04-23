@@ -198,7 +198,7 @@
           truck: true                                   # [-]
           bus: true                                     # [-]
           trailer: true                                 # [-]
-          unknown: false                                # [-]
+          unknown: true                                # [-]
           bicycle: true                                 # [-]
           motorcycle: true                              # [-]
           pedestrian: true                              # [-]
@@ -341,7 +341,7 @@
       #                      so that the path can be within drivable area. This method is able to deal with complex avoidance scenario.
       #                      However, user can't control avoidance manuever execution.
       # "both"             : Use both method.
-      path_generation_method: "shift_line_base"
+      path_generation_method: "optimization_base"
 
       shift_line_pipeline:
         trim:

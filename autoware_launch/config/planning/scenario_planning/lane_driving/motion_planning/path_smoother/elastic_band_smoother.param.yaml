@@ -22,7 +22,7 @@
         clearance_for_smooth: 0.1  # maximum optimizing range when applying smoothing
 
       weight:
-        smooth_weight: 1.0
+        smooth_weight: 0.5
         lat_error_weight: 0.001
 
       qp:
