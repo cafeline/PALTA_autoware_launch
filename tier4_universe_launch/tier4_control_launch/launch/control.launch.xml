@@ -4,6 +4,8 @@
   <arg name="lateral_controller_mode"/>
   <arg name="longitudinal_controller_mode"/>
   <arg name="check_external_emergency_heartbeat"/>
+  <arg name="control_reference_trajectory_topic" default="/planning/trajectory"/>
+  <arg name="use_emergency_handling" default="true"/>
 
   <!-- external cmd selector and converter -->
   <arg name="launch_external_cmd_selector" default="true"/>
@@ -128,6 +130,7 @@
           <param from="$(var vehicle_cmd_gate_param_path)"/>
           <param from="$(var vehicle_param_file)"/>
           <param name="check_external_emergency_heartbeat" value="$(var check_external_emergency_heartbeat)"/>
+          <param name="use_emergency_handling" value="$(var use_emergency_handling)"/>
           <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
         </composable_node>
 
@@ -140,7 +143,7 @@
           <!-- input -->
           <remap from="kinematics" to="/localization/kinematic_state"/>
           <remap from="steering" to="/vehicle/status/steering_status"/>
-          <remap from="trajectory" to="/planning/trajectory"/>
+          <remap from="trajectory" to="$(var control_reference_trajectory_topic)"/>
           <remap from="control_cmd" to="/control/command/control_cmd"/>
           <remap from="trajectory_follower_control_cmd" to="/control/trajectory_follower/control_cmd"/>
           <remap from="control_mode_report" to="/vehicle/status/control_mode"/>
@@ -159,7 +162,7 @@
       <group if="$(eval &quot;'$(var trajectory_follower_mode)' == 'trajectory_follower_node'&quot;)">
         <load_composable_node target="/control/control_container">
           <composable_node pkg="autoware_trajectory_follower_node" plugin="autoware::motion::control::trajectory_follower_node::Controller" name="controller_node_exe" namespace="trajectory_follower">
-            <remap from="~/input/reference_trajectory" to="/planning/trajectory"/>
+            <remap from="~/input/reference_trajectory" to="$(var control_reference_trajectory_topic)"/>
             <remap from="~/input/current_odometry" to="/localization/kinematic_state"/>
             <remap from="~/input/current_steering" to="/vehicle/status/steering_status"/>
             <remap from="~/input/current_accel" to="/localization/acceleration"/>
@@ -217,7 +220,7 @@
             <remap from="~/input/odometry" to="/localization/kinematic_state"/>
             <remap from="~/input/lanelet_map_bin" to="/map/vector_map"/>
             <remap from="~/input/route" to="/planning/mission_planning/route"/>
-            <remap from="~/input/reference_trajectory" to="/planning/trajectory"/>
+            <remap from="~/input/reference_trajectory" to="$(var control_reference_trajectory_topic)"/>
             <remap from="~/input/predicted_trajectory" to="/control/trajectory_follower/lateral/predicted_trajectory"/>
             <param from="$(var nearest_search_param_path)"/>
             <param from="$(var lane_departure_checker_param_path)"/>
@@ -235,7 +238,7 @@
             <remap from="~/input/kinematics" to="/localization/kinematic_state"/>
             <remap from="~/input/operational_mode_state" to="/api/operation_mode/state"/>
             <remap from="~/input/measured_acceleration" to="/localization/acceleration"/>
-            <remap from="~/input/reference_trajectory" to="/planning/trajectory"/>
+            <remap from="~/input/reference_trajectory" to="$(var control_reference_trajectory_topic)"/>
             <remap from="~/input/predicted_trajectory" to="/control/trajectory_follower/lateral/predicted_trajectory"/>
             <remap from="~/output/validation_status" to="~/validation_status"/>
             <param from="$(var control_validator_param_path)"/>
@@ -277,7 +280,7 @@
           <composable_node pkg="autoware_obstacle_collision_checker" plugin="autoware::obstacle_collision_checker::ObstacleCollisionCheckerNode" name="obstacle_collision_checker">
             <remap from="input/lanelet_map_bin" to="/map/vector_map"/>
             <remap from="input/obstacle_pointcloud" to="$(var input_pointcloud_topic_name)"/>
-            <remap from="input/reference_trajectory" to="/planning/trajectory"/>
+            <remap from="input/reference_trajectory" to="$(var control_reference_trajectory_topic)"/>
             <remap from="input/predicted_trajectory" to="/control/trajectory_follower/lateral/predicted_trajectory"/>
             <remap from="input/odometry" to="/localization/kinematic_state"/>
             <param from="$(var obstacle_collision_checker_param_path)"/>
@@ -292,7 +295,7 @@
         <load_composable_node target="/control/control_check_container">
           <composable_node pkg="autoware_predicted_path_checker" plugin="autoware::predicted_path_checker::PredictedPathCheckerNode" name="predicted_path_checker">
             <remap from="~/input/objects" to="$(var input_objects_topic_name)"/>
-            <remap from="~/input/reference_trajectory" to="/planning/trajectory"/>
+            <remap from="~/input/reference_trajectory" to="$(var control_reference_trajectory_topic)"/>
             <remap from="~/input/current_accel" to="/localization/acceleration"/>
             <remap from="~/input/odometry" to="/localization/kinematic_state"/>
             <remap from="~/input/predicted_trajectory" to="/control/trajectory_follower/lateral/predicted_trajectory"/>

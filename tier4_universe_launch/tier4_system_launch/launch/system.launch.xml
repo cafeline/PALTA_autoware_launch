@@ -19,6 +19,8 @@
   <arg name="system_monitor_voltage_monitor_param_path"/>
 
   <arg name="launch_system_monitor" default="true" description="launch system monitor"/>
+  <arg name="launch_component_state_monitor" default="true" description="launch component state monitor"/>
+  <arg name="launch_mrm" default="true" description="launch MRM operators and handler"/>
   <arg name="launch_dummy_diag_publisher" description="launch dummy diag publisher"/>
   <arg name="run_mode" default="online" description="options: online, logging_simulation, planning_simulation"/>
   <arg name="sensor_model" description="sensor model name"/>
@@ -118,7 +120,7 @@
     </group>
 
     <!-- Component State Monitor -->
-    <group>
+    <group if="$(var launch_component_state_monitor)">
       <include file="$(find-pkg-share autoware_component_state_monitor)/launch/component_state_monitor.launch.py">
         <arg name="mode" value="$(var run_mode)"/>
         <arg name="file" value="$(var component_state_monitor_topic_path)"/>
@@ -126,15 +128,17 @@
     </group>
 
     <!-- MRM Operator -->
-    <group unless="$(var use_control_command_gate)">
-      <include file="$(find-pkg-share autoware_mrm_comfortable_stop_operator)/launch/mrm_comfortable_stop_operator.launch.py">
-        <arg name="config_file" value="$(var mrm_comfortable_stop_operator_param_path)"/>
-      </include>
-    </group>
-    <group>
-      <include file="$(find-pkg-share autoware_mrm_emergency_stop_operator)/launch/mrm_emergency_stop_operator.launch.py">
-        <arg name="config_file" value="$(var mrm_emergency_stop_operator_param_path)"/>
-      </include>
+    <group if="$(var launch_mrm)">
+      <group unless="$(var use_control_command_gate)">
+        <include file="$(find-pkg-share autoware_mrm_comfortable_stop_operator)/launch/mrm_comfortable_stop_operator.launch.py">
+          <arg name="config_file" value="$(var mrm_comfortable_stop_operator_param_path)"/>
+        </include>
+      </group>
+      <group>
+        <include file="$(find-pkg-share autoware_mrm_emergency_stop_operator)/launch/mrm_emergency_stop_operator.launch.py">
+          <arg name="config_file" value="$(var mrm_emergency_stop_operator_param_path)"/>
+        </include>
+      </group>
     </group>
 
     <!-- Diagnostic Graph Aggregator -->
@@ -156,10 +160,12 @@
     </group>
 
     <!-- MRM Handler -->
-    <group unless="$(var use_control_command_gate)">
-      <include file="$(find-pkg-share autoware_mrm_handler)/launch/mrm_handler.launch.xml">
-        <arg name="config_file" value="$(var mrm_handler_param_path)"/>
-      </include>
+    <group if="$(var launch_mrm)">
+      <group unless="$(var use_control_command_gate)">
+        <include file="$(find-pkg-share autoware_mrm_handler)/launch/mrm_handler.launch.xml">
+          <arg name="config_file" value="$(var mrm_handler_param_path)"/>
+        </include>
+      </group>
     </group>
   </group>
 

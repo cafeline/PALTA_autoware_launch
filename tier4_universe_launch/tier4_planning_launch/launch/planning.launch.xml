@@ -14,10 +14,13 @@
   <!-- Auto mode setting-->
   <arg name="enable_all_modules_auto_mode"/>
   <arg name="is_simulation"/>
+  <arg name="launch_planning_validator" default="true"/>
   <arg name="launch_remaining_distance_time_calculator" default="false"/>
   <!-- Input topic parameters -->
   <arg name="input_objects_topic_name"/>
   <arg name="input_pointcloud_topic_name"/>
+  <let name="output_velocity_smoother_trajectory" value="/planning/scenario_planning/velocity_smoother/trajectory" if="$(var launch_planning_validator)"/>
+  <let name="output_velocity_smoother_trajectory" value="/planning/trajectory" unless="$(var launch_planning_validator)"/>
 
   <group>
     <push-ros-namespace namespace="planning"/>
@@ -44,11 +47,12 @@
         <arg name="is_simulation" value="$(var is_simulation)"/>
         <arg name="input_objects_topic_name" value="$(var input_objects_topic_name)"/>
         <arg name="input_pointcloud_topic_name" value="$(var input_pointcloud_topic_name)"/>
+        <arg name="output_velocity_smoother_trajectory" value="$(var output_velocity_smoother_trajectory)"/>
       </include>
     </group>
 
     <!-- planning validator -->
-    <group>
+    <group if="$(var launch_planning_validator)">
       <include file="$(find-pkg-share autoware_planning_validator)/launch/planning_validator.launch.xml">
         <arg name="container_type" value="component_container_mt"/>
         <arg name="input_trajectory" value="/planning/scenario_planning/velocity_smoother/trajectory"/>

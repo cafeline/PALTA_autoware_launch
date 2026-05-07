@@ -5,10 +5,12 @@
   <include file="$(find-pkg-share autoware_launch)/config/control/preset/$(var module_preset)_preset.yaml"/>
 
   <arg name="controller" default=""/>
+  <arg name="control_reference_trajectory_topic" default="/planning/trajectory"/>
   <arg name="lateral_controller_mode" default="mpc"/>
   <arg name="longitudinal_controller_mode" default="pid"/>
   <arg name="use_individual_control_param" default="false"/>
   <arg name="use_aeb_autoware_state_check" default="true"/>
+  <arg name="use_emergency_handling" default="true"/>
   <arg name="use_sim_time" default="false"/>
   <arg name="vehicle_model" default="sample_vehicle"/>
 
@@ -69,6 +71,8 @@
     <arg name="lateral_controller_mode" value="$(var selected_lateral_controller_mode)"/>
     <arg name="longitudinal_controller_mode" value="$(var longitudinal_controller_mode)"/>
     <arg name="check_external_emergency_heartbeat" value="$(var check_external_emergency_heartbeat)"/>
+    <arg name="control_reference_trajectory_topic" value="$(var control_reference_trajectory_topic)"/>
+    <arg name="use_emergency_handling" value="$(var use_emergency_handling)"/>
 
     <!-- common param path -->
     <arg name="nearest_search_param_path" value="$(find-pkg-share autoware_launch)/config/control/common/nearest_search.param.yaml"/>

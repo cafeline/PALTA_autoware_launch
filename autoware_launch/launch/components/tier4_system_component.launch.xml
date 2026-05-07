@@ -6,11 +6,19 @@
   <arg name="rosbag_node_monitor_param_path" default="$(find-pkg-share autoware_rosbag_node_monitor)/config/rosbag_node_monitor.param.yaml"/>
   <arg name="require_rosbag_for_auto" default="false"/>
   <arg name="required_rosbag_node_name" default="/rosbag2_recorder"/>
+  <arg name="system_run_mode" default="online"/>
+  <arg name="launch_component_state_monitor" default="true"/>
+  <arg name="launch_mrm" default="true"/>
+  <arg name="launch_system_monitor" default="true"/>
+  <arg name="launch_dummy_diag_publisher" default="false"/>
+  <arg name="sensor_model" default="sample_sensor_kit"/>
 
   <set_parameter name="use_sim_time" value="$(var use_sim_time)"/>
 
   <include file="$(find-pkg-share tier4_system_launch)/launch/system.launch.xml">
     <arg name="run_mode" value="$(var system_run_mode)"/>
+    <arg name="launch_component_state_monitor" value="$(var launch_component_state_monitor)"/>
+    <arg name="launch_mrm" value="$(var launch_mrm)"/>
     <arg name="launch_system_monitor" value="$(var launch_system_monitor)"/>
     <arg name="launch_dummy_diag_publisher" value="$(var launch_dummy_diag_publisher)"/>
     <arg name="sensor_model" value="$(var sensor_model)"/>

@@ -1,6 +1,7 @@
 <launch>
   <arg name="enable_all_modules_auto_mode"/>
   <arg name="is_simulation"/>
+  <arg name="output_velocity_smoother_trajectory" default="/planning/scenario_planning/velocity_smoother/trajectory"/>
   <!-- Input topic parameters -->
   <arg name="input_objects_topic_name"/>
   <arg name="input_pointcloud_topic_name"/>
@@ -40,7 +41,7 @@
 
           <param name="publish_debug_trajs" value="false"/>
           <remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
-          <remap from="~/output/trajectory" to="/planning/scenario_planning/velocity_smoother/trajectory"/>
+          <remap from="~/output/trajectory" to="$(var output_velocity_smoother_trajectory)"/>
 
           <remap from="~/input/external_velocity_limit_mps" to="/planning/scenario_planning/max_velocity"/>
           <remap from="~/input/acceleration" to="/localization/acceleration"/>
