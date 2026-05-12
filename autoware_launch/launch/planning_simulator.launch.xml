@@ -21,6 +21,8 @@
   <arg name="launch_dummy_doors" default="true" description="launch dummy doors simulation"/>
   <arg name="launch_system_monitor" default="false" description="launch system monitor"/>
   <arg name="launch_dummy_diag_publisher" default="true" description="launch dummy diag publisher"/>
+  <!-- Planning sim does not need lsdb teleop mux; avoids find-pkg-share failure when control_command_mux is not built. -->
+  <arg name="launch_control_command_mux" default="false" description="If true, requires control_command_mux in workspace install."/>
   <!-- Scenario simulation -->
   <arg name="initial_engage_state" default="true" description="/vehicle/engage state after starting Autoware"/>
   <arg name="perception/enable_detection_failure" default="true" description="enable to simulate detection failure when using dummy perception"/>
@@ -84,6 +86,8 @@
       <!-- Auto mode setting-->
       <arg name="enable_all_modules_auto_mode" value="$(var enable_all_modules_auto_mode)"/>
       <arg name="is_simulation" value="true"/>
+      <arg name="launch_control_command_mux" value="$(var launch_control_command_mux)"/>
+      <arg name="use_sim_time" value="$(var use_sim_time)"/>
     </include>
   </group>
 
