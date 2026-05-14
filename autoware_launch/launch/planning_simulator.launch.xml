@@ -98,6 +98,7 @@
       <arg name="launch_sensing" value="false"/>
       <arg name="launch_localization" value="false"/>
       <arg name="launch_perception" value="$(var launch_autoware_perception)"/>
+      <arg name="launch_map" value="false"/>
       <!-- Vehicle -->
       <arg name="launch_vehicle_interface" value="$(var launch_vehicle_interface)"/>
       <!-- System -->
