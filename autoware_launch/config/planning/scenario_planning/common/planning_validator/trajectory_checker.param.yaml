@@ -5,10 +5,10 @@
         enable: true
         threshold: 100.0
       curvature:
-        enable: true
+        enable: false
         threshold: 1.0
       relative_angle:
-        enable: true
+        enable: false
         threshold: 2.0 # (= 115 degree)
       lateral_accel:
         enable: true
