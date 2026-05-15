@@ -23,6 +23,7 @@
   <arg name="launch_perception" default="true" description="launch perception"/>
   <arg name="launch_planning" default="true" description="launch planning"/>
   <arg name="launch_control" default="true" description="launch control"/>
+  <arg name="launch_control_command_mux" default="true" description="If true, multiplex Autoware and teleop onto /control/command/* (see control_command_mux). Requires launch_control."/>
   <arg name="launch_api" default="true" description="launch api"/>
   <arg name="use_lidar_host_time_stamp" default="false" description="use ROS host time for Hesai PointCloud2 header stamps"/>
   <!-- Global parameters -->
@@ -148,6 +149,7 @@
       <arg name="controller" value="$(var controller)"/>
       <arg name="use_sim_time" value="$(var use_sim_time)"/>
       <arg name="vehicle_model" value="$(var vehicle_model)"/>
+      <arg name="launch_control_command_mux" value="$(var launch_control_command_mux)"/>
     </include>
   </group>
 
