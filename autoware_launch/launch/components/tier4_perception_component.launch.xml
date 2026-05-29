@@ -126,7 +126,9 @@
 
     <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
     <arg name="occupancy_grid_map_method" value="$(var occupancy_grid_map_method)_occupancy_grid_map"/>
+    <arg name="occupancy_grid_map_param_path" value="$(var occupancy_grid_map_param_path)"/>
     <arg name="occupancy_grid_map_updater" value="$(var occupancy_grid_map_updater)"/>
+    <arg name="occupancy_grid_map_updater_param_path" value="$(var occupancy_grid_map_updater_param_path)"/>
 
     <arg name="use_empty_dynamic_object_publisher" value="$(var use_empty_dynamic_object_publisher)"/>
     <arg name="use_low_height_cropbox" value="$(var use_low_height_cropbox)"/>
